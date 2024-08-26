@@ -1,9 +1,18 @@
-import React from "react";
+"use client";
+import React, { FormEvent, useState } from "react";
 import { TbSunFilled } from "react-icons/tb";
 import { BiCurrentLocation } from "react-icons/bi";
 import { MdOutlineLocationOn, MdOutlineSearch } from "react-icons/md";
 
 function Navbar() {
+  const [searchLocation, setSearchLocation] = useState("");
+
+  //search location submission
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    console.log(searchLocation)
+  };
+
   return (
     <div className=" h-24 bg-white py-6 px-4 flex justify-between">
       {/*weather and sun container*/}
@@ -13,17 +22,25 @@ function Navbar() {
       </div>
       {/*location and searchbar container*/}
       <div className="flex items-center justify-center gap-1 md:gap-4">
-        <BiCurrentLocation className="text-3xl"/>
-        <MdOutlineLocationOn className="text-3xl"/>
+        <BiCurrentLocation className="text-3xl" />
+        <MdOutlineLocationOn className="text-3xl" />
         <h2 className="text-xl">India</h2>
         <div className="top-28 left-4 absolute md:block md:relative mt-2 md:top-auto md:left-auto">
-          <form className="flex items-center justify-center">
+          <form
+            className="flex items-center justify-center"
+            onSubmit={handleSubmit}
+          >
             <input
+              value={searchLocation}
+              onChange={(e) => setSearchLocation(e.target.value)}
               type="text"
               placeholder="Search location..."
               className="ring-2 h-11 ring-gray-200 text-xl px-4 py-2 w-[17rem] rounded-md  focus:outline-none focus:ring-blue-500"
             ></input>
-            <button className="bg-blue-500 h-11 ring-2 rounded-tr-md  rounded-br-md ring-blue-500 py-2 px-4">
+            <button
+              type="submit"
+              className="bg-blue-500 h-11 ring-2 rounded-tr-md  rounded-br-md ring-blue-500 py-2 px-4"
+            >
               <MdOutlineSearch className="text-white text-2xl" />
             </button>
           </form>
