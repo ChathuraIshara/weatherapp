@@ -41,6 +41,7 @@ function Navbar({
 
         console.log(data.list);
         setForecastDetails(data.list);
+        setDisplayedLocation(data.city.name);
         setSunTimes({
           sunrise: data.city.sunrise,
           sunset: data.city.sunset,
@@ -57,6 +58,26 @@ function Navbar({
     fetchData();
   }, [lat, long]);
 
+
+  const handleCurrentLocation=()=>
+  {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLat(latitude);
+          setLong(longitude);
+          console.log('Current Location:', latitude, longitude);
+        },
+        (error) => {
+          console.error('Error getting current location:', error);
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+    }
+
+  }
  
 
   //search location submission
@@ -88,9 +109,9 @@ function Navbar({
       </div>
       {/*location and searchbar container*/}
       <div className="flex items-center justify-center gap-1 md:gap-4">
-        <BiCurrentLocation className="text-3xl" />
-        <MdOutlineLocationOn className="text-3xl" />
-        <h2 className="text-xl">{displayedLocation}</h2>
+        <BiCurrentLocation onClick={handleCurrentLocation} title='your current location' className="text-xl md:text-3xl text-gray-400 hover:opacity-80 cursor-pointer" />
+        <MdOutlineLocationOn className="text-xl md:text-3xl" />
+        <h2 className="text-sm md:text-xl">{displayedLocation}</h2>
         <div className="absolute top-24 left-4  md:block md:relative mt-1 md:top-auto md:left-auto">
           <form
             className="flex items-center justify-center"
