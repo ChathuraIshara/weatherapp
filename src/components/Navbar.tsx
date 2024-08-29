@@ -1,20 +1,86 @@
 "use client";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { TbSunFilled } from "react-icons/tb";
 import { BiCurrentLocation } from "react-icons/bi";
 import { MdOutlineLocationOn, MdOutlineSearch } from "react-icons/md";
+import { endPoints, geoCodingApiKey, weatherMapApiKey } from "../../services";
+import { SunTimes, WeatherList } from "@/types";
 
-function Navbar() {
+interface TodayProps {
+  forecastDetails: WeatherList[];
+  setForecastDetails: (details: WeatherList[]) => void;
+  sunTimes: SunTimes;
+  setSunTimes: (details: SunTimes) => void;
+  loading: boolean; // Add this
+  setLoading: (loading: boolean) => void; // Add this
+}
+
+function Navbar({
+  forecastDetails,
+  setForecastDetails,
+  sunTimes,
+  setSunTimes,
+  loading,
+  setLoading
+}: TodayProps) {
   const [searchLocation, setSearchLocation] = useState("");
+  const [long, setLong] = useState(79.8562055); //default colombo long and lat
+  const [lat, setLat] = useState(6.92183865);
+  const [displayedLocation, setDisplayedLocation] = useState("Colombo"); //navbar display location
+
+  //use effect for fetching weather data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true); // Start loading
+        const response = await fetch(
+          endPoints.weathermapApi +
+            `lat=${lat}&lon=${long}&appid=${weatherMapApiKey}`
+        );
+        const data = await response.json();
+
+        console.log(data.list);
+        setForecastDetails(data.list);
+        setSunTimes({
+          sunrise: data.city.sunrise,
+          sunset: data.city.sunset,
+        });
+        console.log("forecast inside navbar", forecastDetails); // Note: forecastDetails will not immediately reflect the updated state here
+      } catch (error) {
+        console.error("Error:", error);
+      }
+      finally {
+        setLoading(false); // Set loading to false when fetching is complete
+      }
+    };
+
+    fetchData();
+  }, [lat, long]);
+
+ 
 
   //search location submission
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    console.log(searchLocation)
+    fetch(
+      endPoints.geocodingApi + `${searchLocation}&key=${geoCodingApiKey}` //for fetching longtitudes and latitudes of search location
+    )
+      .then((response) => response.json())
+      .then((data) => {
+        const location = data.result[0].geometry.location;
+        const latitude = location.lat;
+        const longitude = location.lng;
+        setLat(latitude);
+        setLong(longitude);
+        console.log(latitude, "-", longitude);
+        setDisplayedLocation(searchLocation);
+      })
+      .catch((error) => console.error("Error:", error));
+    console.log(searchLocation);
   };
 
   return (
-    <div className=" h-20 bg-white py-6 px-4 flex justify-between xl:px-20 ">
+    <div className="fixed top-0 left-0 right-0 h-20 bg-white py-6 px-4 flex justify-between xl:px-20 z-50 ">
       {/*weather and sun container*/}
       <div className="flex items-center gap-4">
         <h1 className="text-4xl text-gray-500">Weather</h1>
@@ -24,8 +90,8 @@ function Navbar() {
       <div className="flex items-center justify-center gap-1 md:gap-4">
         <BiCurrentLocation className="text-3xl" />
         <MdOutlineLocationOn className="text-3xl" />
-        <h2 className="text-xl">India</h2>
-        <div className=" top-24 left-4 absolute md:block md:relative mt-1 md:top-auto md:left-auto">
+        <h2 className="text-xl">{displayedLocation}</h2>
+        <div className="absolute top-24 left-4  md:block md:relative mt-1 md:top-auto md:left-auto">
           <form
             className="flex items-center justify-center"
             onSubmit={handleSubmit}
